@@ -231,5 +231,10 @@
 <script>
 export default {
   name: "Orders",
+  async mounted() {
+    const data = await this.$api.orders.query();
+
+    console.log(data);
+  },
 };
 </script>

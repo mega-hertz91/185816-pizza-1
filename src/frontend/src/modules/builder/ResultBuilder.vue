@@ -9,12 +9,14 @@
       *"
         v-model.trim="name"
         v-validate="['required']"
-        :style="{ borderColor: currenError('pizza_name') ? 'crimson' : 'gray' }"
+        :style="{
+          borderColor: currentError('pizza_name') ? 'crimson' : 'gray',
+        }"
       />
       <span
         style="color: crimson; display: block; padding: 4px 0"
-        v-if="currenError('pizza_name')"
-        >{{ currenError("pizza_name").message }}
+        v-if="currentError('pizza_name')"
+        >{{ currentError("pizza_name").message }}
       </span>
     </label>
     <div
@@ -127,17 +129,19 @@ export default {
         this.item[BuilderCollection.SIZES]?.multiplier
       );
     },
+    currentError: function () {
+      return function (id) {
+        return CrudCollection.getElement(this.errors, (item) =>
+          item.id.match(id)
+        );
+      };
+    },
     replacePath: () => replacePath,
   },
   mounted() {
     this.name = this.item.name || "";
   },
   methods: {
-    currenError(id) {
-      return CrudCollection.getElement(this.errors, (item) =>
-        item.id.match(id)
-      );
-    },
     onDropFill({ dataTransfer }) {
       const data = JSON.parse(dataTransfer.getData(DataTransferType.PAYLOAD));
 

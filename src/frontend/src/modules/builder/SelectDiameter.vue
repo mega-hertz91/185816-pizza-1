@@ -3,7 +3,7 @@
     <div class="sheet">
       <h2 class="title title--small sheet__title">Выберите размер</h2>
       <div class="sheet__content diameter">
-        <RadioButton
+        <UiRadioButton
           v-for="({ id, name, ...other }, idx) of items"
           :key="id"
           :class="['diameter__input', `diameter__input--${sizeMap[idx]}`]"
@@ -19,23 +19,19 @@
           "
         >
           <span>{{ name }}</span>
-        </RadioButton>
+        </UiRadioButton>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import RadioButton from "@/common/RadioButtonNew";
 import { Builder } from "@/common/enums/entity";
 
 const sizeMap = ["small", "normal", "big"];
 
 export default {
   name: "SelectDiameter",
-  components: {
-    RadioButton,
-  },
   props: {
     items: {
       type: Array,

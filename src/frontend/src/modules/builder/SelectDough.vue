@@ -3,7 +3,7 @@
     <div class="sheet">
       <h2 class="title title--small sheet__title">Выберите тесто</h2>
       <div class="sheet__content dough">
-        <RadioButton
+        <UiRadioButton
           v-for="{ id, image, name, description, ...other } of itemsNormalize"
           :key="id"
           :class="['dough__input', `dough__input--${image}`]"
@@ -20,22 +20,18 @@
         >
           <b>{{ name }}</b>
           <span>{{ description }}</span>
-        </RadioButton>
+        </UiRadioButton>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import RadioButton from "@/common/RadioButtonNew";
 import { replacePath } from "@/modules/utils";
 import { Builder } from "@/common/enums/entity";
 
 export default {
   name: "SelectDough",
-  components: {
-    RadioButton,
-  },
   props: {
     items: {
       type: Array,
