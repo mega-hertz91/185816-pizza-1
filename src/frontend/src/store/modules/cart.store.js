@@ -36,13 +36,6 @@ export default {
     sumOrders(state, getters) {
       return getters.totalCountOrders + getters.totalCountMics;
     },
-    scopeOrders(state, getters) {
-      return {
-        orders: state[Cart.ORDERS],
-        misc: state[Cart.MISC].filter((item) => item.quantity !== 0),
-        sum: getters.sumOrders,
-      };
-    },
   },
   actions: {
     updateItem({ commit }, { entity, payload }) {

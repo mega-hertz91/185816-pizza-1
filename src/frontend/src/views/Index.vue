@@ -2,9 +2,6 @@
   <main class="content">
     <form action="#" method="post">
       <div class="content__wrapper">
-        <!--        <pre>-->
-        <!--                          {{ builder }}-->
-        <!--                        </pre-->
         <h1 class="title title--big">Конструктор пиццы</h1>
         <SelectDough
           :items="dough"

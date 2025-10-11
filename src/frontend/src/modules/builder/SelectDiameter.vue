@@ -4,17 +4,17 @@
       <h2 class="title title--small sheet__title">Выберите размер</h2>
       <div class="sheet__content diameter">
         <UiRadioButton
-          v-for="({ id, name, ...other }, idx) of items"
+          v-for="{ id, name } of items"
           :key="id"
-          :class="['diameter__input', `diameter__input--${sizeMap[idx]}`]"
+          :class="['diameter__input', `diameter__input--${sizeMap[id]}`]"
           name="diameter"
           hidden
           :value="id"
-          :checked="selectItem.id === id ? id : null"
+          :checked="selectItem"
           @change="
             $emit('replace', {
               entity,
-              payload: { id, name, ...other },
+              payload: id,
             })
           "
         >
@@ -38,7 +38,7 @@ export default {
       required: true,
     },
     selectItem: {
-      type: [Object, Array],
+      type: [Number, Array],
       required: true,
     },
   },

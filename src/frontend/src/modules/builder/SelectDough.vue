@@ -4,17 +4,17 @@
       <h2 class="title title--small sheet__title">Выберите тесто</h2>
       <div class="sheet__content dough">
         <UiRadioButton
-          v-for="{ id, image, name, description, ...other } of itemsNormalize"
+          v-for="{ id, image, name, description } of itemsNormalize"
           :key="id"
           :class="['dough__input', `dough__input--${image}`]"
           hidden
           name="dough"
           :value="id"
-          :checked="selectItem.id === id ? id : null"
+          :checked="selectItem"
           @change="
             $emit('replace', {
               entity,
-              payload: { id, image, name, description, ...other },
+              payload: id,
             })
           "
         >
@@ -38,7 +38,7 @@ export default {
       required: true,
     },
     selectItem: {
-      type: [Object, Array],
+      type: [Number, Array],
       required: true,
     },
   },

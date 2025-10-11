@@ -22,11 +22,16 @@
             @update="updateItem"
             :items="misc"
           />
-          <cart-form />
+          <cart-form
+            @set="(data) => (address = data)"
+            :phone="isAuthenticated ? user.phone : ''"
+            :addresses="addresses"
+          />
         </div>
       </div>
     </main>
-    <cart-footer :sum="sumOrders" />
+    <cart-footer :sum="sumOrders" @makeOrder="makeOnOrder" />
+    <router-view />
   </form>
 </template>
 
@@ -45,13 +50,30 @@ export default {
     CartAdditional,
     CartForm,
   },
+  data() {
+    return {
+      address: {},
+    };
+  },
   computed: {
-    ...mapState("Cart", ["orders"]),
-    ...mapGetters("Cart", ["isEmpty", "sumOrders"]),
     ...mapState(["misc"]),
+    ...mapState("Auth", ["user", "isAuthenticated"]),
+    ...mapState("Cart", ["orders", "mics"]),
+    ...mapState("Address", {
+      addresses: "items",
+    }),
+    ...mapGetters("Cart", ["isEmpty", "sumOrders"]),
+  },
+  async mounted() {
+    if (this.isAuthenticated) {
+      await this.fetchAddresses();
+    }
   },
   methods: {
     ...mapActions("Cart", ["deleteItem", "updateItem", "addItem", "clearCart"]),
+    ...mapActions("Address", {
+      fetchAddresses: "fetchItems",
+    }),
     editOrder(payload) {
       this.$store.state.Builder = payload;
 
@@ -63,6 +85,19 @@ export default {
       if (this.orders.length < 1) {
         this.clearCart();
       }
+    },
+    makeOnOrder() {
+      const request = {
+        // userId: this.user.id,
+        address: this.address,
+        phone: this.isAuthenticated ? this.user.phone : this.address.phone,
+        pizzas: this.orders,
+        misc: this.misc,
+      };
+
+      console.log(request);
+      // this.clearCart();
+      // this.$router.push("cart/success-popup");
     },
   },
 };

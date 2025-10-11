@@ -1,12 +1,6 @@
 <template>
   <div class="user">
-    <img
-      :src="item.avatar"
-      :alt="item.name"
-      width="72"
-      height="72"
-      @error="errorAvatar"
-    />
+    <img :src="item.avatar" :alt="item.name" width="72" height="72" />
     <div class="user__name">
       <span>{{ item.name }}</span>
       <p
@@ -32,7 +26,12 @@ export default {
   props: {
     item: {
       type: Object,
-      default: () => {},
+      default: () => ({
+        avatar: "",
+        phone: "",
+        name: "",
+        email: "",
+      }),
     },
   },
   methods: {

@@ -11,11 +11,8 @@
       <div class="product__text">
         <h2>{{ item.name }}</h2>
         <ul>
-          <li>
-            {{ item[BuilderCollection.SIZES].name }},
-            {{ item[BuilderCollection.DOUGH].name }},
-          </li>
-          <li>Соус: {{ item[BuilderCollection.SAUCES].name }}</li>
+          <li>{{ selectSize.name }}, {{ selectDough.name }},</li>
+          <li>Соус: {{ selectSauce.name }}</li>
           <li v-if="fill">
             Начинка:
             {{ fill }}
@@ -79,6 +76,8 @@
 <script>
 import { BuilderCollection } from "@/common/enums/builder";
 import { Cart } from "@/common/enums/entity";
+import { CrudCollection } from "@/common/heplers";
+import { mapState } from "vuex";
 
 export default {
   name: "itemItemView",
@@ -88,17 +87,48 @@ export default {
       required: true,
     },
   },
+  data: () => ({
+    entity: Cart.ORDERS,
+  }),
   computed: {
+    ...mapState(["dough", "ingredients", "sauces", "sizes"]),
+    selectDough() {
+      return CrudCollection.getElementByID(
+        this.dough,
+        this.item[BuilderCollection.DOUGH]
+      );
+    },
+    selectSauce() {
+      return CrudCollection.getElementByID(
+        this.sauces,
+        this.item[BuilderCollection.SAUCES]
+      );
+    },
+    selectSize() {
+      return CrudCollection.getElementByID(
+        this.sizes,
+        this.item[BuilderCollection.SIZES]
+      );
+    },
+    selectIngredients() {
+      return this.item.ingredients.map((item) => {
+        const payload = CrudCollection.getElementByID(
+          this.ingredients,
+          item.id
+        );
+
+        return {
+          ...item,
+          ...payload,
+        };
+      });
+    },
     fill() {
-      return this.item[BuilderCollection.INGREDIENTS]
-        .map(({ name }) => name)
-        .join(", ");
+      return this.selectIngredients.map(({ name }) => name).join(", ");
     },
     totalPrice() {
       return this.item.totalPrice * this.item.quantity;
     },
-    BuilderCollection: () => BuilderCollection,
-    entity: () => Cart.ORDERS,
   },
   methods: {
     changeItem(payload) {

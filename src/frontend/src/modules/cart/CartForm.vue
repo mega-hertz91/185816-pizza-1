@@ -1,11 +1,22 @@
 <template>
   <div class="cart__form">
-    <div class="cart-form">
+    <div
+      class="cart-form"
+      @input.stop="$emit('set', { phone, type, address })"
+      @change.stop="$emit('set', { phone, type, address })"
+    >
       <label class="cart-form__select">
         <span class="cart-form__label">Получение заказа:</span>
         <select v-model="type" name="test" class="select">
-          <option value="1">Заберу сам</option>
-          <option value="2">Новый адрес</option>
+          <option value="0">Заберу сам</option>
+          <option value="-1">Новый адрес</option>
+          <option
+            v-for="address of addresses"
+            :key="address.id"
+            :value="address.id"
+          >
+            {{ address.name }}
+          </option>
         </select>
       </label>
 
@@ -19,9 +30,9 @@
           :style="{
             borderColor: currentError('tel') ? 'crimson' : 'gray',
           }"
+          v-model="phone"
         />
       </label>
-
       <transition
         name="address"
         appear
@@ -37,21 +48,37 @@
           <div class="cart-form__input">
             <label class="input">
               <span>Улица*</span>
-              <input type="text" name="street" />
+              <input
+                v-validate="['required']"
+                v-model="address['street']"
+                type="text"
+                name="street"
+                :style="{
+                  borderColor: currentError('street') ? 'crimson' : 'gray',
+                }"
+              />
             </label>
           </div>
 
           <div class="cart-form__input cart-form__input--small">
             <label class="input">
               <span>Дом*</span>
-              <input type="text" name="house" />
+              <input
+                v-validate="['required']"
+                v-model="address['building']"
+                type="text"
+                name="building"
+                :style="{
+                  borderColor: currentError('building') ? 'crimson' : 'gray',
+                }"
+              />
             </label>
           </div>
 
           <div class="cart-form__input cart-form__input--small">
             <label class="input">
               <span>Квартира</span>
-              <input type="text" name="apartment" />
+              <input v-model="address['flat']" type="text" name="flat" />
             </label>
           </div>
         </div>
@@ -62,22 +89,42 @@
 
 <script>
 import { CrudCollection } from "@/common/heplers";
-
-const DeliveryType = {
-  MYSELF: 1,
-  NEW_ADDRESS: 2,
-};
+import DeliveryType from "@/common/enums/delivery-type";
 
 export default {
   name: "CartForm",
+  props: {
+    phone: {
+      type: String,
+      default: "",
+    },
+    addresses: {
+      type: Array,
+      default: () => [],
+    },
+  },
   data() {
     return {
-      type: 1,
+      DeliveryType,
+      type: 0,
+      address: {},
+      tel: "",
       errors: [],
     };
   },
+  mounted() {
+    if (this.phone) {
+      this.tel = this.phone;
+    }
+  },
+  created() {
+    this.$emit("set", {
+      phone: this.phone,
+      type: this.type,
+      address: this.address,
+    });
+  },
   computed: {
-    DeliveryType: () => DeliveryType,
     currentError: function () {
       return function (id) {
         return CrudCollection.getElement(this.errors, (item) =>

@@ -3,16 +3,16 @@
     <p>Основной соус:</p>
     <UiRadioButton
       :class="['radio', 'ingredients__input']"
-      v-for="{ id, name, ...other } of items"
+      v-for="{ id, name } of items"
       :key="id"
       name="sauce"
       :id="id"
       :value="id"
-      :checked="selectItem.id === id ? id : null"
+      :checked="selectItem"
       @change="
         $emit('replace', {
           entity,
-          payload: { id, name, ...other },
+          payload: id,
         })
       "
     >
@@ -32,7 +32,7 @@ export default {
       required: true,
     },
     selectItem: {
-      type: [Object, Array],
+      type: [Number, Array],
       required: true,
     },
     builder: {

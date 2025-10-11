@@ -74,18 +74,20 @@ export default new Vuex.Store({
         const promises = Object.values(BuilderCollection).map((collection) =>
           this.$api[collection].query()
         );
+        // Load init data
 
         const data = await Promise.all(promises);
 
         Object.keys(BuilderCollection).forEach((item, idx) => {
           const entity = item.toLowerCase();
           commit(REPLACE_ENTITY, { entity, payload: data[idx] });
+          // Set default builder
           commit(REPLACE_ENTITY, {
             module: Module.BUILDER,
             entity,
             payload:
               entity !== BuilderCollection.INGREDIENTS
-                ? data[idx][DefaultValue[entity]]
+                ? DefaultValue[entity]
                 : [],
           });
         });
