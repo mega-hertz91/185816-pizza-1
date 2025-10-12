@@ -87,13 +87,42 @@ export default {
       }
     },
     makeOnOrder() {
-      const request = {
-        // userId: this.user.id,
-        address: this.address,
-        phone: this.isAuthenticated ? this.user.phone : this.address.phone,
-        pizzas: this.orders,
-        misc: this.misc,
-      };
+      let request = {};
+      const { phone, type, ...address } = this.address;
+
+      console.log(type);
+
+      if (this.isAuthenticated) {
+        request = {
+          userId: this.user.id,
+          address: { ...address },
+          phone: this.isAuthenticated ? this.user.phone : phone,
+          pizzas: this.orders.map(
+            ({ name, dough, ingredients, sauces, sizes, quantity }) => ({
+              name,
+              doughId: dough,
+              sauceId: sauces,
+              quantity,
+              sizeId: sizes,
+              ingredients: ingredients.map(({ id, quantity }) => ({
+                ingredientId: id,
+                quantity,
+              })),
+            })
+          ),
+          misc: this.misc
+            .filter(({ quantity = 0 }) => quantity)
+            .map(({ id, quantity }) => ({ miscId: id, quantity })),
+        };
+        this.$api.orders.post(request);
+      } else {
+        request = {
+          address: { ...this.address },
+          phone: this.isAuthenticated ? this.user.phone : this.address.phone,
+          pizzas: this.orders,
+          misc: this.misc,
+        };
+      }
 
       console.log(request);
       // this.clearCart();

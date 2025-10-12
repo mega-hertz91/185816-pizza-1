@@ -2,8 +2,8 @@
   <div class="cart__form">
     <div
       class="cart-form"
-      @input.stop="$emit('set', { phone, type, address })"
-      @change.stop="$emit('set', { phone, type, address })"
+      @input.stop="$emit('set', { phone: tel, type, ...address })"
+      @change.stop="$emit('set', { phone: tel, type, ...address })"
     >
       <label class="cart-form__select">
         <span class="cart-form__label">Получение заказа:</span>
@@ -30,7 +30,8 @@
           :style="{
             borderColor: currentError('tel') ? 'crimson' : 'gray',
           }"
-          v-model="phone"
+          :value="phone"
+          @input="($event) => (tel = $event.target.value)"
         />
       </label>
       <transition
@@ -111,11 +112,6 @@ export default {
       tel: "",
       errors: [],
     };
-  },
-  mounted() {
-    if (this.phone) {
-      this.tel = this.phone;
-    }
   },
   created() {
     this.$emit("set", {
