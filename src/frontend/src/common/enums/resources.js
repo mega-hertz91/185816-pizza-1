@@ -8,4 +8,5 @@ export default {
   INGREDIENTS: "ingredients",
   SAUCES: "sauces",
   ADDRESSES: "addresses",
+  ORDERS: "orders",
 };

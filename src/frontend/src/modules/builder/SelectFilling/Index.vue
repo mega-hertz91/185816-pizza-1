@@ -4,19 +4,13 @@
     <ul class="ingredients__list">
       <li
         class="ingredients__item"
-        v-for="{
-          id,
-          image,
-          name,
-          quantity = 0,
-          ...other
-        } of normalizeIngredients"
+        v-for="{ id, image, name, quantity = 0 } of normalizeIngredients"
         :key="id"
         :draggable="quantity < Limit.COUNT_MAX"
         @dragstart.self="
           onDragFill($event, {
             entity,
-            payload: { id, image, name, quantity: quantity + 1, ...other },
+            payload: { id, quantity: quantity + 1 },
           })
         "
         @dragover.prevent
@@ -30,11 +24,7 @@
           :quantity="quantity"
           @update="
             (oldValue, newValue) =>
-              changeItem(
-                { id, image, name, quantity: newValue, ...other },
-                oldValue,
-                newValue
-              )
+              changeItem({ id, quantity: newValue }, oldValue, newValue)
           "
         />
       </li>

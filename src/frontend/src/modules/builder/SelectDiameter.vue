@@ -3,46 +3,42 @@
     <div class="sheet">
       <h2 class="title title--small sheet__title">Выберите размер</h2>
       <div class="sheet__content diameter">
-        <RadioButton
-          v-for="({ id, name, ...other }, idx) of items"
+        <UiRadioButton
+          v-for="{ id, name } of items"
           :key="id"
-          :class="['diameter__input', `diameter__input--${sizeMap[idx]}`]"
+          :class="['diameter__input', `diameter__input--${sizeMap[id]}`]"
           name="diameter"
           hidden
           :value="id"
-          :checked="selectItem.id === id ? id : null"
+          :checked="selectItem"
           @change="
             $emit('replace', {
               entity,
-              payload: { id, name, ...other },
+              payload: id,
             })
           "
         >
           <span>{{ name }}</span>
-        </RadioButton>
+        </UiRadioButton>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import RadioButton from "@/common/RadioButtonNew";
 import { Builder } from "@/common/enums/entity";
 
 const sizeMap = ["small", "normal", "big"];
 
 export default {
   name: "SelectDiameter",
-  components: {
-    RadioButton,
-  },
   props: {
     items: {
       type: Array,
       required: true,
     },
     selectItem: {
-      type: [Object, Array],
+      type: [Number, Array],
       required: true,
     },
   },

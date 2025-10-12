@@ -6,15 +6,17 @@
         type="text"
         name="pizza_name"
         placeholder="Введите название пиццы
-      *"
+          *"
         v-model.trim="name"
         v-validate="['required']"
-        :style="{ borderColor: currenError('pizza_name') ? 'crimson' : 'gray' }"
+        :style="{
+          borderColor: currentError('pizza_name') ? 'crimson' : 'gray',
+        }"
       />
       <span
         style="color: crimson; display: block; padding: 4px 0"
-        v-if="currenError('pizza_name')"
-        >{{ currenError("pizza_name").message }}
+        v-if="currentError('pizza_name')"
+        >{{ currentError("pizza_name").message }}
       </span>
     </label>
     <div
@@ -22,7 +24,7 @@
       :style="[{ transform: `scale(${scale})` }, { transition: `.3s` }]"
     >
       <div
-        :class="`pizza pizza--foundation--${weight}-${sauce}`"
+        :class="`pizza pizza--foundation--${weight}-${sauceType}`"
         @drop.stop="onDropFill"
       >
         <div
@@ -32,7 +34,7 @@
           @dragenter.prevent
         >
           <div
-            v-for="{ id, image, quantity = 0 } of item.ingredients"
+            v-for="{ id, image, quantity = 0 } of selectIngredients"
             :key="id"
           >
             <div
@@ -70,6 +72,7 @@ import { BuilderCollection } from "@/common/enums/builder";
 import { DataTransferType } from "@/common/constants";
 import { replacePath } from "@/modules/utils";
 import { CrudCollection } from "@/common/heplers";
+import { mapState } from "vuex";
 
 const doughMap = {
   1: "small",
@@ -104,28 +107,67 @@ export default {
     };
   },
   computed: {
-    weight() {
-      return doughMap[this.item[BuilderCollection.DOUGH].id];
+    ...mapState(["dough", "ingredients", "sauces", "sizes"]),
+    selectDough() {
+      return CrudCollection.getElementByID(
+        this.dough,
+        this.item[BuilderCollection.DOUGH]
+      );
     },
-    sauce() {
-      return sauceMap[this.item[BuilderCollection.SAUCES].id];
+    selectSauce() {
+      return CrudCollection.getElementByID(
+        this.sauces,
+        this.item[BuilderCollection.SAUCES]
+      );
+    },
+    selectSize() {
+      return CrudCollection.getElementByID(
+        this.sizes,
+        this.item[BuilderCollection.SIZES]
+      );
+    },
+    selectIngredients() {
+      return this.item.ingredients.map((item) => {
+        const payload = CrudCollection.getElementByID(
+          this.ingredients,
+          item.id
+        );
+
+        return {
+          ...item,
+          ...payload,
+        };
+      });
+    },
+    weight() {
+      return doughMap[this.selectDough?.id];
+    },
+    sauceType() {
+      return sauceMap[this.selectSauce?.id];
     },
     scale() {
-      return scaleMap[this.item[BuilderCollection.SIZES].multiplier] || 0;
+      return scaleMap[this.selectSize?.multiplier] || 0;
     },
     ingredientPrice() {
-      return this.item[BuilderCollection.INGREDIENTS].reduce(
-        (acc, { price, quantity }) => acc + price * quantity,
+      return this.selectIngredients.reduce(
+        (acc, { price = 0, quantity = 0 }) => acc + price * quantity,
         0
       );
     },
     totalPrice() {
       return (
-        (this.item[BuilderCollection.DOUGH].price +
-          this.item[BuilderCollection.SAUCES].price +
+        (this.selectDough?.price +
+          this.selectSauce?.price +
           this.ingredientPrice) *
-        this.item[BuilderCollection.SIZES]?.multiplier
+        this.selectSize?.multiplier
       );
+    },
+    currentError: function () {
+      return function (id) {
+        return CrudCollection.getElement(this.errors, (item) =>
+          item.id.match(id)
+        );
+      };
     },
     replacePath: () => replacePath,
   },
@@ -133,11 +175,6 @@ export default {
     this.name = this.item.name || "";
   },
   methods: {
-    currenError(id) {
-      return CrudCollection.getElement(this.errors, (item) =>
-        item.id.match(id)
-      );
-    },
     onDropFill({ dataTransfer }) {
       const data = JSON.parse(dataTransfer.getData(DataTransferType.PAYLOAD));
 

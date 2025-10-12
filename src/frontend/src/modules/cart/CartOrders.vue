@@ -2,6 +2,7 @@
   <transition-group
     leave-active-class="animate__animated animate__backOutLeft"
     tag="ul"
+    class="cart-list sheet"
   >
     <pizza-item-view
       @edit="(payload) => $emit('edit', payload)"

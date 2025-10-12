@@ -1,42 +1,38 @@
 <template>
   <div class="ingredients__sauce">
     <p>Основной соус:</p>
-    <RadioButton
+    <UiRadioButton
       :class="['radio', 'ingredients__input']"
-      v-for="{ id, name, ...other } of items"
+      v-for="{ id, name } of items"
       :key="id"
       name="sauce"
       :id="id"
       :value="id"
-      :checked="selectItem.id === id ? id : null"
+      :checked="selectItem"
       @change="
         $emit('replace', {
           entity,
-          payload: { id, name, ...other },
+          payload: id,
         })
       "
     >
       <span>{{ name }}</span>
-    </RadioButton>
+    </UiRadioButton>
   </div>
 </template>
 
 <script>
-import RadioButton from "@/common/RadioButtonNew";
 import { Builder } from "@/common/enums/entity";
 
 export default {
   name: "SelectSauce",
-  components: {
-    RadioButton,
-  },
   props: {
     items: {
       type: Array,
       required: true,
     },
     selectItem: {
-      type: [Object, Array],
+      type: [Number, Array],
       required: true,
     },
     builder: {

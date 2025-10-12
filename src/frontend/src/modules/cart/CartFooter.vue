@@ -19,8 +19,8 @@
       <button
         type="submit"
         class="button"
-        @click.prevent="submitOrder"
-        :disabled="orders.length === 0"
+        @click.prevent="$emit('makeOrder')"
+        :disabled="orders.length < 1"
       >
         Оформить заказ
       </button>
@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { mapActions, mapState, mapGetters } from "vuex";
+import { mapState } from "vuex";
 
 export default {
   name: "CartFooter",
@@ -42,17 +42,5 @@ export default {
   computed: {
     ...mapState("Cart", ["orders"]),
   },
-  methods: {
-    ...mapGetters("Cart", ["scopeOrders"]),
-    ...mapActions("Cart", ["clearCart"]),
-    ...mapActions("Orders", ["addOrder"]),
-    submitOrder() {
-      this.addOrder(this.scopeOrders());
-      this.clearCart();
-      this.$router.push("cart/success-popup");
-    },
-  },
 };
 </script>
-
-<style scoped></style>

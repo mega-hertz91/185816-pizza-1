@@ -40,13 +40,13 @@
                 placeholder="example@mail.ru"
                 required
                 :style="{
-                  borderColor: currenError('email') ? 'crimson' : 'gray',
+                  borderColor: currentError('email') ? 'crimson' : 'gray',
                 }"
               />
               <span
                 style="color: crimson; display: block; padding: 4px 0"
-                v-if="currenError('email')"
-                >{{ currenError("email").message }}
+                v-if="currentError('email')"
+                >{{ currentError("email").message }}
               </span>
             </label>
           </div>
@@ -61,13 +61,13 @@
                 name="pass"
                 required
                 :style="{
-                  borderColor: currenError('pass') ? 'crimson' : 'gray',
+                  borderColor: currentError('pass') ? 'crimson' : 'gray',
                 }"
               />
               <span
                 style="color: crimson; display: block; padding: 4px 0"
-                v-if="currenError('pass')"
-                >{{ currenError("pass").message }}
+                v-if="currentError('pass')"
+                >{{ currentError("pass").message }}
               </span>
             </label>
           </div>
@@ -100,6 +100,13 @@ export default {
         this.errors > 0 || this.email.length === 0 || this.password.length === 0
       );
     },
+    currentError: function () {
+      return function (id) {
+        return CrudCollection.getElement(this.errors, (item) =>
+          item.id.match(id)
+        );
+      };
+    },
   },
   methods: {
     ...mapActions("Auth", ["login"]),
@@ -119,11 +126,6 @@ export default {
     clear() {
       this.errors = [];
       this.password = "";
-    },
-    currenError(id) {
-      return CrudCollection.getElement(this.errors, (item) =>
-        item.id.match(id)
-      );
     },
     close() {
       this.open = !this.open;

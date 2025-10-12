@@ -11,23 +11,89 @@
       </router-link>
 
       <router-link class="layout__link" to="/orders"
-        >История заказов</router-link
-      >
+        >История заказов
+      </router-link>
       <router-link class="layout__link layout__link--active" to="/profile"
-        >Мои данные</router-link
-      >
+        >Мои данные
+      </router-link>
     </div>
 
     <!-- Profile component -->
-    <profile-view />
+    <div class="layout__content">
+      <div class="layout__title">
+        <h1 class="title title--big">Мои данные</h1>
+      </div>
+
+      <!-- User info -->
+      <user-info v-if="user" :item="user" />
+
+      <transition-group
+        tag-div
+        leave-active-class="animate__animated animate__backOutLeft"
+      >
+        <address-view
+          v-for="(item, idx) of orderItems"
+          :order="idx + 1"
+          :key="item.id"
+          :item="item"
+          @delete="(item) => deleteItem(item)"
+        />
+      </transition-group>
+      <transition
+        tag="div"
+        name="address_form"
+        enter-active-class="animate__animated animate__fadeIn"
+        leave-active-class="animate__animated animate__fadeOut"
+        class="layout__actions"
+      >
+        <address-form
+          v-if="isCreated"
+          :order="orderItems.length + 1"
+          @submit="submit"
+          create-only
+        />
+      </transition>
+      <div class="layout__button">
+        <button
+          type="button"
+          class="button button--border"
+          v-show="!isCreated"
+          @click.stop="isCreated = !isCreated"
+        >
+          Добавить новый адрес
+        </button>
+      </div>
+    </div>
   </main>
 </template>
 
 <script>
-import ProfileView from "@/modules/profile/index.vue";
+import UserInfo from "@/modules/profile/UserInfo.vue";
+import { mapActions, mapGetters, mapState } from "vuex";
+import AddressView from "@/modules/profile/AddressView.vue";
+import AddressForm from "@/modules/profile/AddressForm.vue";
 
 export default {
   name: "Profile",
-  components: { ProfileView },
+  components: { AddressForm, AddressView, UserInfo },
+  data() {
+    return {
+      isCreated: false,
+    };
+  },
+  computed: {
+    ...mapState("Auth", ["user"]),
+    ...mapGetters("Address", ["orderItems"]),
+  },
+  async mounted() {
+    await this.fetchItems();
+  },
+  methods: {
+    ...mapActions("Address", ["fetchItems", "createItem", "deleteItem"]),
+    submit(data) {
+      this.createItem({ ...data, userId: this.user.id });
+      this.isCreated = false;
+    },
+  },
 };
 </script>
