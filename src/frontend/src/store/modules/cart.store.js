@@ -8,6 +8,7 @@ import {
 import Module from "@/common/enums/module";
 import { Cart } from "@/common/enums/entity";
 import { v4 as uuidv4 } from "uuid";
+import { CrudCollection } from "@/common/heplers";
 
 const module = Module.CART;
 
@@ -27,8 +28,18 @@ export default {
         0
       );
     },
-    totalCountMics(state) {
-      return state[Cart.MISC].reduce(
+    selectMisc(state, getters, rootState) {
+      return state.misc.map((item) => {
+        const payload = CrudCollection.getElementByID(rootState.misc, item.id);
+
+        return {
+          ...item,
+          ...payload,
+        };
+      });
+    },
+    totalCountMics(state, getters) {
+      return getters.selectMisc.reduce(
         (sum, order) => sum + order.price * order.quantity,
         0
       );

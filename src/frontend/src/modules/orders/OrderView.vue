@@ -2,7 +2,7 @@
   <section class="sheet order">
     <div class="order__wrapper">
       <div class="order__number">
-        <b>Заказ #11199929</b>
+        <b>Заказ #{{ item.id }}</b>
       </div>
 
       <div class="order__sum">
@@ -10,87 +10,41 @@
       </div>
 
       <div class="order__button">
-        <button type="button" class="button button--border">Удалить</button>
+        <button
+          @click.prevent.stop="$emit('delete', { id: item.id })"
+          type="button"
+          class="button button--border"
+        >
+          Удалить
+        </button>
       </div>
       <div class="order__button">
         <button type="button" class="button">Повторить</button>
       </div>
     </div>
 
-    <ul class="order__list">
-      <li class="order__item">
-        <div class="product">
-          <img
-            src="img/product.svg"
-            class="product__img"
-            width="56"
-            height="56"
-            alt="Капричоза"
-          />
-          <div class="product__text">
-            <h2>Капричоза</h2>
-            <ul>
-              <li>30 см, на тонком тесте</li>
-              <li>Соус: томатный</li>
-              <li>
-                Начинка: грибы, лук, ветчина, пармезан, ананас, бекон, блю чиз
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <p class="order__price">782 ₽</p>
-      </li>
-      <li class="order__item">
-        <div class="product">
-          <img
-            src="img/product.svg"
-            class="product__img"
-            width="56"
-            height="56"
-            alt="Капричоза"
-          />
-          <div class="product__text">
-            <h2>Моя любимая</h2>
-            <ul>
-              <li>30 см, на тонком тесте</li>
-              <li>Соус: томатный</li>
-              <li>Начинка: грибы, лук, ветчина, пармезан, ананас</li>
-            </ul>
-          </div>
-        </div>
-
-        <p class="order__price">2х782 ₽</p>
-      </li>
-    </ul>
-
-    <ul class="order__additional">
-      <li>
+    <transition-group
+      tag="ul"
+      class="order__list"
+      leave-active-class="animate__animated animate__backOutLeft"
+    >
+      <pizza-item-view
+        v-for="pizza of item.orderPizzas"
+        :key="pizza.id"
+        :item="pizza"
+      />
+    </transition-group>
+    <ul class="order__additional" v-if="additionalItems">
+      <li v-for="additionalItem of additionalItems" :key="additionalItem.id">
         <img
-          src="img/cola.svg"
+          :src="additionalItem.image"
           width="20"
           height="30"
           alt="Coca-Cola 0,5 литра"
         />
         <p>
-          <span>Coca-Cola 0,5 литра</span>
-          <b>56 ₽</b>
-        </p>
-      </li>
-      <li>
-        <img src="img/sauce.svg" width="20" height="30" alt="Острый соус" />
-        <span>Острый соус <br />30 ₽</span>
-      </li>
-      <li>
-        <img
-          src="img/potato.svg"
-          width="20"
-          height="30"
-          alt="Картошка из печи"
-        />
-        <p>
-          <span>Картошка из печи</span>
-          <b>170 ₽</b>
+          <span>{{ additionalItem.name }}</span>
+          <b>{{ additionalItem.price * additionalItem.quantity }} ₽</b>
         </p>
       </li>
     </ul>
@@ -102,7 +56,31 @@
 </template>
 
 <script>
+import PizzaItemView from "@/modules/orders/PizzaItemView.vue";
+import { mapGetters } from "vuex";
+import { BuilderCollection } from "@/common/enums/builder";
+
 export default {
   name: "OrderView",
+  components: { PizzaItemView },
+  props: {
+    item: {
+      type: Object,
+      default: () => ({}),
+    },
+  },
+  computed: {
+    ...mapGetters(["getEntityByID"]),
+    additionalItems() {
+      if (this.item.orderMisc) {
+        return this.item.orderMisc.map(({ miscId, quantity }) => ({
+          quantity,
+          ...this.getEntityByID({ entity: BuilderCollection.MISC, id: miscId }),
+        }));
+      }
+
+      return [];
+    },
+  },
 };
 </script>

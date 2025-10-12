@@ -76,11 +76,10 @@
 <script>
 import { BuilderCollection } from "@/common/enums/builder";
 import { Cart } from "@/common/enums/entity";
-import { CrudCollection } from "@/common/heplers";
-import { mapState } from "vuex";
+import { mapGetters } from "vuex";
 
 export default {
-  name: "itemItemView",
+  name: "PizzaItemView",
   props: {
     item: {
       type: Object,
@@ -91,35 +90,34 @@ export default {
     entity: Cart.ORDERS,
   }),
   computed: {
-    ...mapState(["dough", "ingredients", "sauces", "sizes"]),
+    ...mapGetters(["getEntityByID"]),
     selectDough() {
-      return CrudCollection.getElementByID(
-        this.dough,
-        this.item[BuilderCollection.DOUGH]
-      );
+      return this.getEntityByID({
+        entity: BuilderCollection.DOUGH,
+        id: this.item[BuilderCollection.DOUGH],
+      });
     },
     selectSauce() {
-      return CrudCollection.getElementByID(
-        this.sauces,
-        this.item[BuilderCollection.SAUCES]
-      );
+      return this.getEntityByID({
+        entity: BuilderCollection.SAUCES,
+        id: this.item[BuilderCollection.SAUCES],
+      });
     },
     selectSize() {
-      return CrudCollection.getElementByID(
-        this.sizes,
-        this.item[BuilderCollection.SIZES]
-      );
+      return this.getEntityByID({
+        entity: BuilderCollection.SIZES,
+        id: this.item[BuilderCollection.SIZES],
+      });
     },
     selectIngredients() {
-      return this.item.ingredients.map((item) => {
-        const payload = CrudCollection.getElementByID(
-          this.ingredients,
-          item.id
-        );
+      return this.item.ingredients.map(({ id }) => {
+        const { name } = this.getEntityByID({
+          entity: BuilderCollection.INGREDIENTS,
+          id,
+        });
 
         return {
-          ...item,
-          ...payload,
+          name,
         };
       });
     },
@@ -147,5 +145,3 @@ export default {
   },
 };
 </script>
-
-<style scoped></style>

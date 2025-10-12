@@ -62,7 +62,7 @@ export default {
     ...mapState("Address", {
       addresses: "items",
     }),
-    ...mapGetters("Cart", ["isEmpty", "sumOrders"]),
+    ...mapGetters("Cart", ["isEmpty", "sumOrders", "selectMisc"]),
   },
   async mounted() {
     if (this.isAuthenticated) {
@@ -86,7 +86,7 @@ export default {
         this.clearCart();
       }
     },
-    makeOnOrder() {
+    async makeOnOrder() {
       let request = {};
       const { phone, type, ...address } = this.address;
 
@@ -95,7 +95,17 @@ export default {
       if (this.isAuthenticated) {
         request = {
           userId: this.user.id,
-          address: { ...address },
+          address: (() => {
+            if (type < 0) {
+              return { ...address };
+            }
+
+            if (type > 0) {
+              return type;
+            }
+
+            return null;
+          })(),
           phone: this.isAuthenticated ? this.user.phone : phone,
           pizzas: this.orders.map(
             ({ name, dough, ingredients, sauces, sizes, quantity }) => ({
@@ -110,11 +120,12 @@ export default {
               })),
             })
           ),
-          misc: this.misc
-            .filter(({ quantity = 0 }) => quantity)
-            .map(({ id, quantity }) => ({ miscId: id, quantity })),
+          misc: this.selectMisc.map(({ id, quantity }) => ({
+            miscId: id,
+            quantity,
+          })),
         };
-        this.$api.orders.post(request);
+        await this.$api.orders.post(request);
       } else {
         request = {
           address: { ...this.address },
@@ -124,9 +135,8 @@ export default {
         };
       }
 
-      console.log(request);
-      // this.clearCart();
-      // this.$router.push("cart/success-popup");
+      await this.clearCart();
+      await this.$router.push("cart/success-popup");
     },
   },
 };
