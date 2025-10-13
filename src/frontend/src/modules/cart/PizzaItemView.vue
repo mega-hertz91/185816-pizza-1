@@ -20,13 +20,14 @@
         </ul>
       </div>
     </div>
-
     <div class="counter cart-list__counter">
       <button
         type="button"
         class="counter__button counter__button--minus"
         :disabled="item.quantity < 1"
-        @click="changeItem({ ...item, quantity: (item.quantity -= 1) })"
+        @click="
+          changeItem({ ...item, quantity: (item.quantity -= 1), totalPrice })
+        "
       >
         <span class="visually-hidden">Меньше</span>
       </button>
@@ -39,7 +40,9 @@
       <button
         type="button"
         class="counter__button counter__button--plus counter__button--orange"
-        @click="changeItem({ ...item, quantity: (item.quantity += 1) })"
+        @click="
+          changeItem({ ...item, quantity: (item.quantity += 1), totalPrice })
+        "
       >
         <span class="visually-hidden">Больше</span>
       </button>
@@ -75,8 +78,9 @@
 
 <script>
 import { BuilderCollection } from "@/common/enums/builder";
-import { Cart } from "@/common/enums/entity";
-import { mapGetters } from "vuex";
+import { Builder, Cart } from "@/common/enums/entity";
+import { mapGetters, mapState } from "vuex";
+import { calculatePizza } from "@/common/utils";
 
 export default {
   name: "PizzaItemView",
@@ -90,42 +94,47 @@ export default {
     entity: Cart.ORDERS,
   }),
   computed: {
+    ...mapState("Cart", ["misc"]),
     ...mapGetters(["getEntityByID"]),
     selectDough() {
       return this.getEntityByID({
         entity: BuilderCollection.DOUGH,
-        id: this.item[BuilderCollection.DOUGH],
+        id: this.item[Builder.DOUGH],
       });
     },
     selectSauce() {
       return this.getEntityByID({
         entity: BuilderCollection.SAUCES,
-        id: this.item[BuilderCollection.SAUCES],
+        id: this.item[Builder.SAUCES],
       });
     },
     selectSize() {
       return this.getEntityByID({
         entity: BuilderCollection.SIZES,
-        id: this.item[BuilderCollection.SIZES],
+        id: this.item[Builder.SIZES],
       });
     },
     selectIngredients() {
-      return this.item.ingredients.map(({ id }) => {
-        const { name } = this.getEntityByID({
+      return this.item.ingredients.map((item) => ({
+        ...item,
+        ...this.getEntityByID({
           entity: BuilderCollection.INGREDIENTS,
-          id,
-        });
-
-        return {
-          name,
-        };
-      });
+          id: item.id,
+        }),
+      }));
     },
     fill() {
       return this.selectIngredients.map(({ name }) => name).join(", ");
     },
     totalPrice() {
-      return this.item.totalPrice * this.item.quantity;
+      return (
+        calculatePizza(
+          this.selectDough,
+          this.selectSauce,
+          this.selectSize,
+          this.selectIngredients
+        ) * this.item.quantity
+      );
     },
   },
   methods: {

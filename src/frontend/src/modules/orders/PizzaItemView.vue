@@ -6,7 +6,7 @@
         class="product__img"
         width="56"
         height="56"
-        alt="Капричоза"
+        :alt="item.name"
       />
       <div class="product__text">
         <h2>{{ item.name }}</h2>
@@ -21,13 +21,18 @@
       </div>
     </div>
 
-    <p class="order__price">782 ₽</p>
+    <p class="order__price">
+      {{ totalCount }}
+      ₽ x
+      {{ item.quantity }}
+    </p>
   </li>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
 import { BuilderCollection } from "@/common/enums/builder";
+import { calculatePizza } from "@/common/utils";
 
 export default {
   name: "PizzaItemView",
@@ -76,6 +81,21 @@ export default {
     fill() {
       return this.selectIngredients.map(({ name }) => name).join(", ");
     },
+    totalCount() {
+      return calculatePizza(
+        this.selectDough,
+        this.selectSauce,
+        this.selectSize,
+        this.selectIngredients
+      );
+    },
+  },
+  mounted() {
+    this.$emit("calc", {
+      id: this.item.id,
+      price: this.totalCount,
+      quantity: this.item.quantity,
+    });
   },
 };
 </script>

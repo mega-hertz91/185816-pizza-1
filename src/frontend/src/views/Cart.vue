@@ -14,7 +14,7 @@
             @update="updateItem"
             @delete="deleteItemOrder"
             @edit="editOrder"
-            :items="orders"
+            :items="pizzas"
           />
           <cart-additional
             @add="addItem"
@@ -30,7 +30,7 @@
         </div>
       </div>
     </main>
-    <cart-footer :sum="sumOrders" @makeOrder="makeOnOrder" />
+    <cart-footer @makeOrder="makeOnOrder" />
     <router-view />
   </form>
 </template>
@@ -41,6 +41,7 @@ import { mapActions, mapGetters, mapState } from "vuex";
 import CartOrders from "@/modules/cart/CartOrders";
 import CartAdditional from "@/modules/cart/CartAdditional";
 import CartForm from "@/modules/cart/CartForm";
+import { Cart } from "@/common/enums/entity";
 
 export default {
   name: "CartView",
@@ -58,7 +59,10 @@ export default {
   computed: {
     ...mapState(["misc"]),
     ...mapState("Auth", ["user", "isAuthenticated"]),
-    ...mapState("Cart", ["orders", "mics"]),
+    ...mapState("Cart", {
+      pizzas: (state) => state[Cart.ORDERS],
+      orderMisc: (state) => state[Cart.MISC],
+    }),
     ...mapState("Address", {
       addresses: "items",
     }),
@@ -82,57 +86,57 @@ export default {
     deleteItemOrder(payload) {
       this.deleteItem(payload);
 
-      if (this.orders.length < 1) {
+      if (this.pizzas.length < 1) {
         this.clearCart();
       }
     },
     async makeOnOrder() {
-      let request = {};
       const { phone, type, ...address } = this.address;
-
-      console.log(type);
-
-      if (this.isAuthenticated) {
-        request = {
-          userId: this.user.id,
-          address: (() => {
-            if (type < 0) {
-              return { ...address };
-            }
-
-            if (type > 0) {
-              return type;
-            }
-
-            return null;
-          })(),
-          phone: this.isAuthenticated ? this.user.phone : phone,
-          pizzas: this.orders.map(
-            ({ name, dough, ingredients, sauces, sizes, quantity }) => ({
-              name,
-              doughId: dough,
-              sauceId: sauces,
-              quantity,
-              sizeId: sizes,
-              ingredients: ingredients.map(({ id, quantity }) => ({
-                ingredientId: id,
-                quantity,
-              })),
-            })
-          ),
-          misc: this.selectMisc.map(({ id, quantity }) => ({
-            miscId: id,
+      const pizzas = this.pizzas.map(
+        ({ doughId, sizeId, sauceId, name, ingredients, quantity }) => ({
+          name,
+          doughId,
+          sauceId,
+          sizeId,
+          quantity,
+          ingredients: ingredients.map(({ id, quantity }) => ({
+            ingredientId: id,
             quantity,
           })),
+        })
+      );
+
+      const misc = this.orderMisc.map(({ id, quantity }) => ({
+        miscId: id,
+        quantity,
+      }));
+
+      let request = {
+        phone: this.isAuthenticated ? this.user.phone : phone,
+        misc,
+        pizzas,
+      };
+
+      if (this.isAuthenticated) {
+        if (type < 0) {
+          request["address"] = address;
+        }
+
+        if (type > 0) {
+          request["addressId"] = type;
+        }
+
+        if (type === 0) {
+          request["address"] = null;
+        }
+
+        request = {
+          userId: this.user.id,
+          ...request,
         };
         await this.$api.orders.post(request);
       } else {
-        request = {
-          address: { ...this.address },
-          phone: this.isAuthenticated ? this.user.phone : this.address.phone,
-          pizzas: this.orders,
-          misc: this.misc,
-        };
+        console.log({ address: { ...this.address }, ...request });
       }
 
       await this.clearCart();
